@@ -1,11 +1,10 @@
 {
-	"id": "obsidian-sample-plugin",
-	"name": "Sample Plugin",
+	"id": "nested-daily-todos",
+	"name": "Nested Daily Todos",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Carry over incomplete todos from Daily Notes grouped by headers, with support for nesting and flexible todo states.",
+	"author": "Thomas Brezinski",
+	"authorUrl": "https://github.com/thomasbrezinski",
 	"isDesktopOnly": false
 }

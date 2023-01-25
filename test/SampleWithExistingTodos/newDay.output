@@ -1,0 +1,15 @@
+# New Daily Note
+
+With some existing text
+
+## Work
+- [ ] Incomplete item that does not already exist in new note
+- [x] Incomplete item that is already completed in new note
+- [x] Completed item that is also completed in new note
+- [ ] Completed item that is incomplete in new note
+- [ ] Incomplete item with incomplete child
+	- [ ] Incomplete child
+- [ ] Incomplete item with child that is complete in new note
+	- [x] Incomplete child that is already complete in new note
+
+#tags

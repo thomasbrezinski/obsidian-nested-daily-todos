@@ -1,0 +1,7 @@
+{
+  "daysLookBack": null,
+  "groupBySection": true,
+  "removeEmptyTodos": true,
+  "supportedTodoChars": {},
+  "completeTodoChars": {}
+}

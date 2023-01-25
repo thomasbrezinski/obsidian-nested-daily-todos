@@ -1,0 +1,9 @@
+package-lock.json
+src/i18n
+dist/
+build/
+.idea/
+coverage/
+.jest-cache/
+node_modules/
+test/Sample*
