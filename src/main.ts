@@ -111,7 +111,7 @@ export async function addIncompleteTodosToTodaysNote(plugin: NestedDailyTodos) {
         }
     }
 
-    const notes = Array.from(dates, (date) => getDailyNote(date, allDailyNotes));
+    const notes = Array.from(dates, (date) => getDailyNote(date, allDailyNotes)).filter(note => note !== null);
     console.debug(`Running with: supportedTodoChars: "${Array.from(settings.supportedTodoChars).join("")}", completeTodoChars: "${Array.from(settings.completeTodoChars).join("")}"`)
     console.info(`Checking notes: ${notes.map(note => note.name).join(', ')}`);
 
