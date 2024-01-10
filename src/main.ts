@@ -43,7 +43,7 @@ export default class NestedDailyTodos extends Plugin {
         );
 
         this.addCommand({
-            id: 'nested-daily-todos-add-incomplete-todos',
+            id: 'add-incomplete-todos',
             name: 'Add previous incomplete todos',
             callback: () => addIncompleteTodosToTodaysNote(this)
         });
