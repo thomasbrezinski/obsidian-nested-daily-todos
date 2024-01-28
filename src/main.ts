@@ -35,7 +35,7 @@ export default class NestedDailyTodos extends Plugin {
 
         this.addRibbonIcon(
             'bullet-list-glyph',
-            'Nested Daily Todos',
+            'Add incomplete todos to today\'s note',
             (evt: MouseEvent) => {
                 new Notice('Running Nested Daily Todos');
                 addIncompleteTodosToTodaysNote(this);
