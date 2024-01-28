@@ -1,6 +1,6 @@
 {
 	"name": "nested-daily-todos",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Carry over incomplete todos from Daily Notes grouped by headers, with support for nesting and flexible todo states.",
 	"main": "main.js",
 	"scripts": {
@@ -20,6 +20,7 @@
 		"@babel/preset-env": "^7.20.2",
 		"@babel/preset-react": "^7.18.6",
 		"@babel/preset-typescript": "^7.21.0",
+		"@babel/traverse": ">=7.23.2",
 		"@jest/globals": "^29.4.3",
 		"@types/jest": "^29.4.0",
 		"@types/node": "^16.11.6",
