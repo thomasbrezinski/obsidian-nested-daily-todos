@@ -18,8 +18,7 @@ today's Daily Note. It supports grouping the todos by section and supports alter
 ## How to use
 The plugin includes a ribbon icon `Nested Daily Todos` that will add relevant incomplete todos to today's Daily Note.
 
-There is also a command `Add prevoius incomplete todos` that can be ran from the Obsidian command palette.
+There is also a command `Add prevoius incomplete todos` that can be run from the Obsidian command palette.
 
 ## How to install
-Until the plugin is available in the community plugins gallery, you can install it manually by downloading a release
-and unzipping it into your vault's plugins folder.
+You can install the plugin from the Community Plugins tab within Obsidian. Just search for "Nested Daily Todos".
