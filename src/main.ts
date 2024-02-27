@@ -12,6 +12,7 @@ import {NestedDailyTodosSettingTab} from './settings';
 
 interface NestedDailyTodosSettings {
     daysLookBack: number;
+    lookBackExistingNotesInsteadOfDays: boolean;
     groupBySection: boolean;
     removeEmptyTodos: boolean;
     supportedTodoChars: Set<string>;
@@ -20,6 +21,7 @@ interface NestedDailyTodosSettings {
 
 export const DEFAULT_SETTINGS: NestedDailyTodosSettings = {
     daysLookBack: 7,
+    lookBackExistingNotesInsteadOfDays: false,
     groupBySection: true,
     removeEmptyTodos: true,
     supportedTodoChars: new Set(['x', 'X', '/', '-']),
@@ -89,17 +91,11 @@ export default class NestedDailyTodos extends Plugin {
 
 export async function addIncompleteTodosToTodaysNote(plugin: NestedDailyTodos) {
     const settings = plugin.settings;
-    const days = Array.from({length: settings.daysLookBack + 1}, (_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        return moment(d);
-    });
-    const today = days[0];
-    const dates = days.reverse();
-
     // TODO: Use getAbstractFileByPath() with daily note paths
-    const allDailyNotes = getAllDailyNotes();
+    let allDailyNotes = getAllDailyNotes();
 
+    // Handle today
+    const today = moment().startOf('day');
     let todayNote = getDailyNote(today, allDailyNotes);
     if (null === todayNote) {
         try {
@@ -109,20 +105,38 @@ export async function addIncompleteTodosToTodaysNote(plugin: NestedDailyTodos) {
             console.error(`Failed to create missing note for today: ${e}`);
             throw e;
         }
+        allDailyNotes = getAllDailyNotes();
     }
 
-    const notes = Array.from(dates, (date) => getDailyNote(date, allDailyNotes)).filter(note => note !== null);
+    let notesToProcess: TFile[] = [];
+    if (!settings.lookBackExistingNotesInsteadOfDays) {
+        // If looking back days, generate the moments, retrieve notes for any days that exist
+        const prevDays = Array.from({length: settings.daysLookBack + 1}, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (settings.daysLookBack - i));
+            return moment(d);
+        });
+        notesToProcess = Array.from(prevDays, (date) => getDailyNote(date, allDailyNotes)).filter(note => note !== null);
+    } else {
+        // If looking back notes, grab the most recent existing notes
+        const sortedKeys = Object.keys(allDailyNotes).sort((a, b) => parseDateFromDailyNoteKey(b).getTime() - parseDateFromDailyNoteKey(a).getTime());
+        const todaysIndex = sortedKeys.indexOf(today.format('[day-]YYYY-MM-DDTHH:mm:ssZ'));
+        const prevNotes = sortedKeys.slice(todaysIndex, todaysIndex + settings.daysLookBack + 1)
+        notesToProcess = [...prevNotes.map(key => allDailyNotes[key])];
+    }
+    notesToProcess = notesToProcess.reverse();
+
     console.debug(`Running with: supportedTodoChars: "${Array.from(settings.supportedTodoChars).join("")}", completeTodoChars: "${Array.from(settings.completeTodoChars).join("")}"`)
-    console.info(`Checking notes: ${notes.map(note => note.name).join(', ')}`);
+    console.info(`Checking notes: ${notesToProcess.map(note => note.name).join(', ')}`);
 
     const existingTodos: Map<string, TodoNode[]>[] = await parseFilesForTodos(
-        notes,
+        notesToProcess,
         settings.groupBySection,
         settings.supportedTodoChars,
         settings.completeTodoChars
     );
     existingTodos.forEach((dayOfTodos, index) => {
-        console.info(`Todos for ${notes[index].name}`);
+        console.info(`Todos for ${notesToProcess[index].name}`);
         const numberOfTopLevelTodos = Array.from(dayOfTodos.values()).reduce((sum, currentArray) => sum + currentArray.length, 0);
         console.info(`Number of top-level todos found: ${numberOfTopLevelTodos}`);
         dayOfTodos.forEach((todos, group) => {
@@ -185,4 +199,9 @@ export async function parseFilesForTodos(
         }
     }
     return todos;
+}
+
+function parseDateFromDailyNoteKey(key: string): Date {
+    const dateString = key.split('-')[1];
+    return new Date(dateString);
 }
