@@ -1,6 +1,6 @@
 {
 	"name": "nested-daily-todos",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Carry over incomplete todos from Daily Notes grouped by headers, with support for nesting and flexible todo states.",
 	"main": "main.js",
 	"scripts": {
