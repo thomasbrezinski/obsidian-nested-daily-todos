@@ -26,6 +26,18 @@ export class NestedDailyTodosSettingTab extends PluginSettingTab {
                 })
             });
         new Setting(containerEl)
+            .setName('Check previous existing notes instead of days')
+            .setDesc('Enable this to check existing previous notes rather than days. For example, if set to ' +
+                'check 1 previous day, and this option is enabled, the plugin will look for todos in the latest ' +
+                'daily note, even if that note is older than 1 day.')
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.lookBackExistingNotesInsteadOfDays)
+                .onChange(async (value) => {
+                    this.plugin.settings.lookBackExistingNotesInsteadOfDays = value
+                    await this.plugin.saveSettings();
+                })
+            )
+        new Setting(containerEl)
             .setName('Group todos by section')
             .setDesc('Enable this to group incomplete todos by any headings they are under. If disabled, or a previous' +
                 'heading is not found in today\'s note, the incomplete todos are ended to the end of today\'s note.')
