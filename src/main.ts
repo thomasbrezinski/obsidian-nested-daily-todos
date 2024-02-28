@@ -202,6 +202,6 @@ export async function parseFilesForTodos(
 }
 
 function parseDateFromDailyNoteKey(key: string): Date {
-    const dateString = key.split('-')[1];
+    const dateString = key.substring(4); // Daily notes have format "day-timestamp"
     return new Date(dateString);
 }
