@@ -522,6 +522,7 @@ describe('golden examples', () => {
         ['SampleWithMultipleSectionHeaders', true],
         ['SampleWithExistingTodos', true],
         ['SampleWithSupportedTodoStates', true],
+        ['SampleRemovingIncompleteItemsFromPreviousNotes']
     ])('Produces expected output for %s', (sampleDir: string, bySection: boolean) => {
         // Given
         const previousNoteText = fs.readFileSync(path.join(__dirname, sampleDir, 'previousDay.input'), 'utf8');

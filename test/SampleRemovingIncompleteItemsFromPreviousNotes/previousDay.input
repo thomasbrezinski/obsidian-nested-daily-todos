@@ -1,0 +1,18 @@
+This sample contains cases where carried over todos should be deleted from the previous note
+
+## Work
+- [ ] Incomplete item that is already completed in new note
+- [x] Completed item that is also completed in new note
+- [x] Completed item that is incomplete in new note
+- [ ] Incomplete item with incomplete child
+	- [ ] Incomplete child
+- [ ] Incomplete item with child that is complete in new note
+	- [ ] Incomplete child that is already complete in new note
+- [ ] Incomplete item that does not already exist in new note
+- [x] Completed item that is not in new note
+- [x] Completed item that is not in new note with an incomplete child
+    - [ ] Incomplete child
+
+Suspendisse tempus, magna sed semper mollis, ex leo ullamcorper neque, vel faucibus sem odio quis velit
+
+#tags
