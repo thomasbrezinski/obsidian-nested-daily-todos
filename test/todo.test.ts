@@ -4,14 +4,15 @@
  */
 
 import {
-	calculateRemainingIncompleteTodos,
-	filterOutExistingTodos,
-	insertIncompleteTodos,
-	parseForTodos,
-	parseTextForTodos,
-	todoHasIncompleteItem,
-	TodoNode,
-	todosToString
+    calculateRemainingIncompleteTodos,
+    filterOutExistingTodos,
+    insertIncompleteTodos,
+    parseForTodos,
+    parseTextForTodos,
+    removeIncompleteTodos,
+    todoHasIncompleteItem,
+    TodoNode,
+    todosToString
 } from "../src/todo";
 import * as fs from "fs";
 import * as path from "path";
@@ -519,13 +520,14 @@ more text
 
 describe('golden examples', () => {
     test.each([
-        ['SampleWithMultipleSectionHeaders', true],
-        ['SampleWithExistingTodos', true],
-        ['SampleWithSupportedTodoStates', true],
-        ['SampleRemovingIncompleteItemsFromPreviousNotes']
-    ])('Produces expected output for %s', (sampleDir: string, bySection: boolean) => {
+        ['SampleWithMultipleSectionHeaders', true, false],
+        ['SampleWithExistingTodos', true, false],
+        ['SampleWithSupportedTodoStates', true, false],
+        ['SampleRemovingIncompleteItemsFromPreviousNotes', true, true]
+    ])('Produces expected output for %s', (sampleDir: string, bySection: boolean, removePreviousIncompleteTodos: boolean) => {
         // Given
         const previousNoteText = fs.readFileSync(path.join(__dirname, sampleDir, 'previousDay.input'), 'utf8');
+        const expectedPreviousNoteText = fs.readFileSync(path.join(__dirname, sampleDir, 'previousDay.output'), 'utf8');
         const newNoteInitialText = fs.readFileSync(path.join(__dirname, sampleDir, 'newDay.input'), 'utf8');
 
         // When
@@ -534,9 +536,16 @@ describe('golden examples', () => {
         const existingTodos = parseTextForTodos(newNoteInitialText, bySection, allowedChars, completeChars)
         const missingIncompleteTodos = filterOutExistingTodos(incompleteTodos, existingTodos)
         const result = insertIncompleteTodos(missingIncompleteTodos, bySection, newNoteInitialText);
+        let previousNoteWithIncompleteTodosRemoved;
+        if (removePreviousIncompleteTodos) {
+            previousNoteWithIncompleteTodosRemoved = removeIncompleteTodos(previousNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+        }
 
         // Then
         const expectedNewDayText = fs.readFileSync(path.join(__dirname, sampleDir, 'newDay.output'), 'utf8');
-        expect(result).toBe(expectedNewDayText)
+        if (removePreviousIncompleteTodos) {
+            expect(previousNoteWithIncompleteTodosRemoved).toBe(expectedPreviousNoteText);
+        }
+        expect(result).toBe(expectedNewDayText);
     });
 });

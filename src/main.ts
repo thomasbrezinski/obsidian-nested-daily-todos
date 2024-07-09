@@ -15,6 +15,7 @@ interface NestedDailyTodosSettings {
     lookBackExistingNotesInsteadOfDays: boolean;
     groupBySection: boolean;
     removeEmptyTodos: boolean;
+    removeIncompleteTodosFromPreviousNotes: boolean;
     supportedTodoChars: Set<string>;
     completeTodoChars: Set<string>;
 }
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: NestedDailyTodosSettings = {
     lookBackExistingNotesInsteadOfDays: false,
     groupBySection: true,
     removeEmptyTodos: true,
+    removeIncompleteTodosFromPreviousNotes: false,
     supportedTodoChars: new Set(['x', 'X', '/', '-']),
     completeTodoChars: new Set(['x', 'X', '-'])
 };
