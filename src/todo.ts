@@ -155,17 +155,15 @@ export function removeIncompleteTodos(
                }
            }
            if (itemFound) {
-               console.info(`found ${item} in input of todos to remove`);
                if (result.todo.complete && !todoHasIncompleteItem(result.todo)) {
                    // If the item is complete with no incomplete children, it's likely that a later note re-introduced
                    // the incomplete item. It should not be removed from this note
-                   console.warn(`However, the todo is complete with no incomplete children, so it should be kept`)
+                   console.info(`Not removing ${item} because it is complete`);
                    updatedNoteText.push(...lines.slice(i, i + result.numItems));
                } else {
-                   console.info("The todo was incomplete or had incomplete children, so removed")
+                   console.info(`Removing ${item} because it is incomplete and was added to today's note`);
                }
            } else {
-               console.debug(`This todo was not found in the input of todos to remove: ${result.todo.item}`);
                updatedNoteText.push(...lines.slice(i, i + result.numItems));
            }
            i += result.numItems - 1;
