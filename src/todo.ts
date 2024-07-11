@@ -1,3 +1,4 @@
+export const UntitledSection = "Untitled";
 export interface TodoNode {
     item: string
     complete: boolean
@@ -86,7 +87,6 @@ export function parseTextForTodos(text: string, bySection: boolean, allowedChars
 
     let sectionTitle: string | null = null
     const todosBySection = new Map<string, TodoNode[]>();
-    const untitled = "Untitled"
 
     for (let i = 0; i < lines.length; i++) {
         const result = parseForTodos(allowedChars, completeChars, lines, i, -1)
@@ -97,7 +97,7 @@ export function parseTextForTodos(text: string, bySection: boolean, allowedChars
             if (bySection && sectionTitle != null) {
                 updateElseSet(todosBySection, sectionTitle, result.todo)
             } else {
-                updateElseSet(todosBySection, untitled, result.todo)
+                updateElseSet(todosBySection, UntitledSection, result.todo)
             }
             i += result.numItems - 1;
         }
@@ -132,7 +132,6 @@ export function removeIncompleteTodos(
     const updatedNoteText: string[] = [];
 
     let sectionTitle: string | null = null;
-    const untitled = "Untitled";
 
     for (let i = 0; i < lines.length; i++) {
        const result = parseForTodos(allowedChars, completeChars, lines, i, -1)
@@ -141,7 +140,7 @@ export function removeIncompleteTodos(
        }
        if (null !== result.todo && result.todo.item !== '') {
            // It's an Todo item, check if it's one that we should keep or remove
-           const sectionToCheck = (bySection && sectionTitle !== null) ? sectionTitle : untitled;
+           const sectionToCheck = (bySection && sectionTitle !== null) ? sectionTitle : UntitledSection;
            const item = result.todo.item;
 
            const todosToCheck = incompleteTodos.get(sectionToCheck);

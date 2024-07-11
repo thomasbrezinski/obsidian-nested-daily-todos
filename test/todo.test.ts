@@ -12,7 +12,7 @@ import {
     removeIncompleteTodos,
     todoHasIncompleteItem,
     TodoNode,
-    todosToString
+    todosToString, UntitledSection
 } from "../src/todo";
 import * as fs from "fs";
 import * as path from "path";
@@ -217,13 +217,13 @@ describe('calculateRemainingIncompleteTodos', () => {
     it('identical todo on multiple days only appears once', () => {
         // Given
         const todos: Map<string, TodoNode[]>[] = [
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
                 children: []
             }]]]),
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
@@ -236,7 +236,7 @@ describe('calculateRemainingIncompleteTodos', () => {
 
         // Then
         const expected = new Map<string, TodoNode[]>([
-            ["untitled", [{item: "item 1", state: " ", complete: false, children: []}]]
+            [UntitledSection, [{item: "item 1", state: " ", complete: false, children: []}]]
         ])
         expect(incompleteTodos).toMatchObject(expected)
     });
@@ -244,13 +244,13 @@ describe('calculateRemainingIncompleteTodos', () => {
     it('incomplete todo that appears on multiple days with different children is replaced by latest', () => {
         // Given
         const todos: Map<string, TodoNode[]>[] = [
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
                 children: []
             }]]]),
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
@@ -270,7 +270,7 @@ describe('calculateRemainingIncompleteTodos', () => {
 
         // Then
         const expected = new Map<string, TodoNode[]>([
-            ["untitled", [{
+            [UntitledSection, [{
                 item: "item 1", state: " ", complete: false, children: [
                     {
                         item: "new nested item",
@@ -287,13 +287,13 @@ describe('calculateRemainingIncompleteTodos', () => {
     it('incomplete Todo complete on later day is removed', () => {
         // Given
         const todos: Map<string, TodoNode[]>[] = [
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
                 children: []
             }]]]),
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: "x",
                 complete: true,
@@ -313,26 +313,26 @@ describe('calculateRemainingIncompleteTodos', () => {
         const incompleteTodos = calculateRemainingIncompleteTodos(todos);
 
         // Then
-        expect(incompleteTodos).toMatchObject(new Map<string, TodoNode[]>([["untitled", []]]))
+        expect(incompleteTodos).toMatchObject(new Map<string, TodoNode[]>([[UntitledSection, []]]))
 
     });
 
     it('todo that has incomplete, complete, incomplete days is re-added', () => {
         // Given
         const todos: Map<string, TodoNode[]>[] = [
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
                 children: []
             }]]]),
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: "x",
                 complete: true,
                 children: []
             }]]]),
-            new Map<string, TodoNode[]>([["untitled", [{
+            new Map<string, TodoNode[]>([[UntitledSection, [{
                 item: "item 1",
                 state: " ",
                 complete: false,
@@ -345,7 +345,7 @@ describe('calculateRemainingIncompleteTodos', () => {
 
         // Then
         const expected = new Map<string, TodoNode[]>([
-            ["untitled", [{item: "item 1", state: " ", complete: false, children: []}]]
+            [UntitledSection, [{item: "item 1", state: " ", complete: false, children: []}]]
         ])
         expect(incompleteTodos).toMatchObject(expected);
     });
@@ -415,7 +415,7 @@ describe('insertTodos', () => {
     it('new text contains provided todos', () => {
         // Given
         const todos: Map<string, TodoNode[]> = new Map<string, TodoNode[]>([
-            ["untitled",
+            [UntitledSection,
                 [
                     {
                         item: "item 1",
@@ -512,6 +512,209 @@ more text
 
 ## personal
 - [ ] personal item
+
+more text
+`);
+    });
+});
+
+describe('removeIncompleteTodos', () => {
+    it('Complete items are not removed even when specified', () => {
+        // Given
+        const initialNoteText = `
+## work
+- [x] foo
+
+## personal
+
+more text
+`;
+        const incompleteTodos: Map<string, TodoNode[]> = new Map([
+            ['## work', [{item: "foo", state: "x", children: [], complete: true}]],
+        ]);
+        const bySection = true;
+
+
+        // When
+        const newNoteText = removeIncompleteTodos(initialNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+
+        // Then
+        expect(newNoteText).toBe(`
+## work
+- [x] foo
+
+## personal
+
+more text
+`);
+    });
+
+    it('Only specified incomplete items are removed', () => {
+        // Given
+        const initialNoteText = `
+## work
+- [ ] foo
+- [ ] bar
+- [ ] baz
+  - [ ] abc
+
+## personal
+
+more text
+`;
+        const incompleteTodos: Map<string, TodoNode[]> = new Map([
+            ['## work', [
+                {item: "foo", state: " ", children: [], complete: false},
+                {item: "bar", state: " ", children: [], complete: false}
+            ]],
+        ]);
+        const bySection = true;
+
+
+        // When
+        const newNoteText = removeIncompleteTodos(initialNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+
+        // Then
+        expect(newNoteText).toBe(`
+## work
+- [ ] baz
+  - [ ] abc
+
+## personal
+
+more text
+`);
+    });
+
+    it('Incomplete items with children have children removed', () => {
+        // Given
+        const initialNoteText = `
+## work
+- [ ] foo
+  - [x] bar
+    - [x] baz
+- [ ] abc
+  - [?] abc
+- [x] def
+
+## personal
+
+more text
+`;
+        const incompleteTodos: Map<string, TodoNode[]> = new Map([
+            ['## work', [
+                {item: "foo", state: " ", children: [], complete: false}, // It doesn't matter that the children are different
+                {item: "abc", state: " ", children: [{item: "abc", state: "!", children: [], complete: false}], complete: false},
+            ]],
+        ]);
+        const bySection = true;
+
+
+        // When
+        const newNoteText = removeIncompleteTodos(initialNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+
+        // Then
+        expect(newNoteText).toBe(`
+## work
+- [x] def
+
+## personal
+
+more text
+`);
+    });
+
+    it('Nothing is removed when specified items are not found in text', () => {
+        // Given
+        const initialNoteText = `
+## work
+- [ ] foo
+- [x] bar
+
+## personal
+
+more text
+`;
+        const incompleteTodos: Map<string, TodoNode[]> = new Map([
+            ['## work', [{item: "baz", state: " ", children: [], complete: true}]],
+        ]);
+        const bySection = true;
+
+
+        // When
+        const newNoteText = removeIncompleteTodos(initialNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+
+        // Then
+        expect(newNoteText).toBe(initialNoteText);
+    });
+
+    it('When grouping by section, matching items are not removed from other sections', () => {
+        // Given
+        const initialNoteText = `
+No section
+- [ ] foo
+     
+## work
+- [ ] foo
+
+## personal
+- [ ] foo
+
+more text
+`;
+        const incompleteTodos: Map<string, TodoNode[]> = new Map([
+            ['## work', [{item: "foo", state: " ", children: [], complete: false}]],
+        ]);
+        const bySection = true;
+
+
+        // When
+        const newNoteText = removeIncompleteTodos(initialNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+
+        // Then
+        expect(newNoteText).toBe(`
+No section
+- [ ] foo
+     
+## work
+
+## personal
+- [ ] foo
+
+more text
+`);
+    });
+
+    it('When not grouping by section, matching items are not removed from any section', () => {
+        // Given
+        const initialNoteText = `
+No section
+- [ ] foo
+     
+## work
+- [ ] foo
+
+## personal
+- [ ] foo
+
+more text
+`;
+        const incompleteTodos: Map<string, TodoNode[]> = new Map([
+            [UntitledSection, [{item: "foo", state: " ", children: [], complete: false}]],
+        ]);
+        const bySection = false;
+
+
+        // When
+        const newNoteText = removeIncompleteTodos(initialNoteText, incompleteTodos, bySection, allowedChars, completeChars);
+
+        // Then
+        expect(newNoteText).toBe(`
+No section
+     
+## work
+
+## personal
 
 more text
 `);
