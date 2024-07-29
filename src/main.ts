@@ -6,6 +6,7 @@ import {
     insertIncompleteTodos,
     parseTextForTodos,
     removeEmptyTodos,
+    removeIncompleteTodos,
     TodoNode
 } from './todo';
 import {NestedDailyTodosSettingTab} from './settings';
@@ -15,6 +16,7 @@ interface NestedDailyTodosSettings {
     lookBackExistingNotesInsteadOfDays: boolean;
     groupBySection: boolean;
     removeEmptyTodos: boolean;
+    removeIncompleteTodosFromPreviousNotes: boolean;
     supportedTodoChars: Set<string>;
     completeTodoChars: Set<string>;
 }
@@ -24,6 +26,7 @@ export const DEFAULT_SETTINGS: NestedDailyTodosSettings = {
     lookBackExistingNotesInsteadOfDays: false,
     groupBySection: true,
     removeEmptyTodos: true,
+    removeIncompleteTodosFromPreviousNotes: false,
     supportedTodoChars: new Set(['x', 'X', '/', '-']),
     completeTodoChars: new Set(['x', 'X', '-'])
 };
@@ -125,6 +128,7 @@ export async function addIncompleteTodosToTodaysNote(plugin: NestedDailyTodos) {
         notesToProcess = [...prevNotes.map(key => allDailyNotes[key])];
     }
     notesToProcess = notesToProcess.reverse();
+    const previousNotes = notesToProcess.slice(0, -1);
 
     console.debug(`Running with: supportedTodoChars: "${Array.from(settings.supportedTodoChars).join("")}", completeTodoChars: "${Array.from(settings.completeTodoChars).join("")}"`)
     console.info(`Checking notes: ${notesToProcess.map(note => note.name).join(', ')}`);
@@ -174,6 +178,24 @@ export async function addIncompleteTodosToTodaysNote(plugin: NestedDailyTodos) {
                 todayNote,
                 removeEmptyTodos.bind(null)
             )
+    }
+
+    if (settings.removeIncompleteTodosFromPreviousNotes && numMissingTodos > 0) {
+        // Remove the inserted todos from the previous notes
+        // Rather than removing them during the original parsing, they are only removed after today's note has been
+        // updated to reduce chances of data loss
+        console.info("Removing incomplete todos from previous notes that were carried forward");
+        for (const previousNote of previousNotes) {
+            const previousNoteText: string = await this.app.vault.read(previousNote);
+            const updatedNoteText = removeIncompleteTodos(
+                previousNoteText,
+                missingIncompleteTodos,
+                settings.groupBySection,
+                settings.supportedTodoChars,
+                settings.completeTodoChars
+            );
+            await this.app.vault.modify(previousNote, updatedNoteText);
+        }
     }
 }
 

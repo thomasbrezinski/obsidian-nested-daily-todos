@@ -1,3 +1,4 @@
+export const UntitledSection = "Untitled";
 export interface TodoNode {
     item: string
     complete: boolean
@@ -86,7 +87,6 @@ export function parseTextForTodos(text: string, bySection: boolean, allowedChars
 
     let sectionTitle: string | null = null
     const todosBySection = new Map<string, TodoNode[]>();
-    const untitled = "Untitled"
 
     for (let i = 0; i < lines.length; i++) {
         const result = parseForTodos(allowedChars, completeChars, lines, i, -1)
@@ -94,15 +94,84 @@ export function parseTextForTodos(text: string, bySection: boolean, allowedChars
             sectionTitle = parseLineForTitle(lines[i])
         }
         if (null !== result.todo && result.todo.item !== '') {
-            i += result.numItems - 1
             if (bySection && sectionTitle != null) {
                 updateElseSet(todosBySection, sectionTitle, result.todo)
             } else {
-                updateElseSet(todosBySection, untitled, result.todo)
+                updateElseSet(todosBySection, UntitledSection, result.todo)
             }
+            i += result.numItems - 1;
         }
     }
     return todosBySection
+}
+
+/**
+ * Given a Map of ToDoNodes optionally grouped by section that have been considered for addition to today's daily note,
+ * remove them from the previous parsed note text
+ *
+ * Updating the previous note with the new text is done outside of this function
+ *
+ * WARNING: The plugin does not enforce equality of children nodes between todos, meaning if a Todo had different
+ * children in a later note, the information about the previous children will be lost forever when this removes the old
+ * Todo and its children
+ *
+ * @param previousText The text of the previous note
+ * @param incompleteTodos Map of section to incomplete TodoNodes that should be removed
+ * @param bySection Whether the provided Todos and the previous notes should attempt to only match Todos in the same section
+ * @param allowedChars An array of the characters that will be recognized as valid states of a todo
+ * @param completeChars A set of the characters that signify a todo is complete
+ */
+export function removeIncompleteTodos(
+    previousText: string,
+    incompleteTodos: Map<string, TodoNode[]>,
+    bySection: boolean,
+    allowedChars: Set<string>,
+    completeChars: Set<string>
+): string {
+    const lines = previousText.split('\n');
+    const updatedNoteText: string[] = [];
+
+    let sectionTitle: string | null = null;
+
+    for (let i = 0; i < lines.length; i++) {
+       const result = parseForTodos(allowedChars, completeChars, lines, i, -1)
+       if (null === result.todo) {
+           sectionTitle = parseLineForTitle(lines[i])
+       }
+       if (null !== result.todo && result.todo.item !== '') {
+           // It's an Todo item, check if it's one that we should keep or remove
+           const sectionToCheck = (bySection && sectionTitle !== null) ? sectionTitle : UntitledSection;
+           const item = result.todo.item;
+
+           const todosToCheck = incompleteTodos.get(sectionToCheck);
+           let itemFound = false;
+           if (todosToCheck) {
+               for (let j = 0; j < todosToCheck.length; j++) {
+                   if (todosToCheck[j].item === item) {
+                       itemFound = true;
+                       break;
+                   }
+               }
+           }
+           if (itemFound) {
+               if (result.todo.complete && !todoHasIncompleteItem(result.todo)) {
+                   // If the item is complete with no incomplete children, it's likely that a later note re-introduced
+                   // the incomplete item. It should not be removed from this note
+                   console.info(`Not removing ${item} because it is complete`);
+                   updatedNoteText.push(...lines.slice(i, i + result.numItems));
+               } else {
+                   console.info(`Removing ${item} because it is incomplete and was added to today's note`);
+               }
+           } else {
+               updatedNoteText.push(...lines.slice(i, i + result.numItems));
+           }
+           i += result.numItems - 1;
+       } else {
+           // line is not a todo, keep it
+           updatedNoteText.push(lines[i]);
+       }
+    }
+    return updatedNoteText.join("\n");
 }
 
 export function parseLineForTitle(line: string): string | null {

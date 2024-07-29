@@ -1,0 +1,10 @@
+This sample contains cases where carried over todos should be deleted from the previous note
+
+## Work
+- [x] Completed item that is also completed in new note
+- [x] Completed item that is incomplete in new note
+- [x] Completed item that is not in new note
+
+Suspendisse tempus, magna sed semper mollis, ex leo ullamcorper neque, vel faucibus sem odio quis velit
+
+#tags

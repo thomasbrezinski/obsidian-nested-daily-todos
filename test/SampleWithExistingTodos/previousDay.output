@@ -1,0 +1,16 @@
+This sample contains corner cases where the new note already contains some of the
+previous todos in various states
+
+## Work
+- [ ] Incomplete item that is already completed in new note
+- [x] Completed item that is also completed in new note
+- [x] Completed item that is incomplete in new note
+- [ ] Incomplete item with incomplete child
+	- [ ] Incomplete child
+- [ ] Incomplete item with child that is complete in new note
+	- [ ] Incomplete child that is already complete in new note
+- [ ] Incomplete item that does not already exist in new note
+
+Suspendisse tempus, magna sed semper mollis, ex leo ullamcorper neque, vel faucibus sem odio quis velit
+
+#tags

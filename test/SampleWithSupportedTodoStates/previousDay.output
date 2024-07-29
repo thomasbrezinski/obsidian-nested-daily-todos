@@ -1,0 +1,8 @@
+This sample contains examples of todos with some of the optional states supported by some themese.
+
+## Work
+- [ ] Incomplete
+- [x] Typical complete
+- [/] Partially complete
+- [-] Canceled
+- [?] Question

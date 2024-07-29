@@ -59,6 +59,31 @@ export class NestedDailyTodosSettingTab extends PluginSettingTab {
                 })
             )
         new Setting(containerEl)
+            .setName('Remove incomplete todos from previous notes')
+            .setDesc((() => {
+                const fragment = document.createDocumentFragment();
+                const description = document.createElement("div");
+                description.innerHTML = `
+                ⚠ This setting is destructive, data loss can occur. Please use with care and ensure your vault is 
+                backed up.<br>
+                Please be particularly aware that this plugin does not enforce equality of a Todo's children. If the 
+                same top-level Todo has different children in a newer note, enabling this option will remove the older 
+                todo and its children, permanently losing the information about what the previous children 
+                were. ⚠<br><br>
+                When enabled, todos that are added to today's Daily Note will be removed from the parsed previous notes.
+                When left disabled, previous notes are left unchanged and the most recent version of incomplete todos are copied to today's Daily Note.
+            `;
+                fragment.appendChild(description);
+                return fragment;
+            })())
+            .addToggle((toggle) => toggle
+                .setValue(this.plugin.settings.removeIncompleteTodosFromPreviousNotes)
+                .onChange(async (value) => {
+                    this.plugin.settings.removeIncompleteTodosFromPreviousNotes = value
+                    await this.plugin.saveSettings()
+                })
+            )
+        new Setting(containerEl)
             .setName('Supported Todo characters')
             .setDesc('Todo items with these values will be considered todos and carried forward if incomplete. If ' +
                 'you use a theme or plugin that makes use of non-standard values like - [!] and you want that entry ' +
